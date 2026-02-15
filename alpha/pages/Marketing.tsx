@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { generateMarketingCampaign } from '../services/geminiService';
 import { Sparkles, MessageSquare, Send, Copy, RefreshCw } from 'lucide-react';
+import { api } from '../services/api';
 
 const Marketing: React.FC = () => {
   const [clientName, setClientName] = useState('Adriana Silva');
@@ -11,9 +11,14 @@ const Marketing: React.FC = () => {
 
   const handleGenerate = async () => {
     setLoading(true);
-    const result = await generateMarketingCampaign(clientName, service, type);
-    setGeneratedText(result || '');
-    setLoading(false);
+    try {
+      const result = await api.ai.marketingMessage({ clientName, recentService: service, promoType: type });
+      setGeneratedText(result.text || '');
+    } catch {
+      setGeneratedText('Falha ao gerar mensagem. Verifique a API do backend.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const copyToClipboard = () => {
@@ -32,11 +37,11 @@ const Marketing: React.FC = () => {
           <p className="text-slate-300 text-sm max-w-lg mb-8">
             Utilize nossa inteligência artificial para criar mensagens personalizadas e elegantes para o SPA DO CÍLIOS. Aumente sua retenção de clientes em até 30% com comunicação assertiva.
           </p>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
               <label className="text-xs font-semibold text-slate-400 uppercase">Nome da Cliente</label>
-              <input 
+              <input
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-500"
@@ -44,7 +49,7 @@ const Marketing: React.FC = () => {
             </div>
             <div className="space-y-2">
               <label className="text-xs font-semibold text-slate-400 uppercase">Serviço Recente</label>
-              <input 
+              <input
                 value={service}
                 onChange={(e) => setService(e.target.value)}
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-500"
@@ -52,7 +57,7 @@ const Marketing: React.FC = () => {
             </div>
             <div className="space-y-2">
               <label className="text-xs font-semibold text-slate-400 uppercase">Objetivo</label>
-              <select 
+              <select
                 value={type}
                 onChange={(e) => setType(e.target.value as any)}
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-500 appearance-none"
@@ -64,7 +69,7 @@ const Marketing: React.FC = () => {
             </div>
           </div>
 
-          <button 
+          <button
             onClick={handleGenerate}
             disabled={loading}
             className="mt-8 flex items-center justify-center gap-2 px-8 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold transition-all disabled:opacity-50"
@@ -73,8 +78,7 @@ const Marketing: React.FC = () => {
             {loading ? 'Pensando...' : 'Gerar Campanha com AI'}
           </button>
         </div>
-        
-        {/* Background blobs */}
+
         <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -ml-32 -mb-32"></div>
       </div>
@@ -87,27 +91,21 @@ const Marketing: React.FC = () => {
               Resultado da Sugestão
             </div>
             <div className="flex gap-2">
-              <button 
+              <button
                 onClick={copyToClipboard}
                 className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors"
                 title="Copiar texto"
               >
                 <Copy size={18} />
               </button>
-              <button 
-                className="flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-semibold hover:bg-emerald-100 transition-colors"
-              >
+              <button className="flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-semibold hover:bg-emerald-100 transition-colors">
                 <Send size={14} />
                 WhatsApp
               </button>
             </div>
           </div>
-          <div className="p-6 bg-slate-50 rounded-xl border border-slate-100 text-slate-700 leading-relaxed italic">
-            "{generatedText}"
-          </div>
-          <p className="mt-4 text-[10px] text-slate-400 uppercase tracking-widest text-center">
-            Gerado via Gemini AI Engine
-          </p>
+          <div className="p-6 bg-slate-50 rounded-xl border border-slate-100 text-slate-700 leading-relaxed italic">"{generatedText}"</div>
+          <p className="mt-4 text-[10px] text-slate-400 uppercase tracking-widest text-center">Gerado via API no backend</p>
         </div>
       )}
     </div>

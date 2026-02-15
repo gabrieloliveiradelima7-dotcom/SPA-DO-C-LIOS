@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ClientStatus {
+  Active
+  Inactive
+}
+
+enum ServiceCategory {
+  Hair
+  Nails
+  Skin
+  Premium
+  Internal
+}
+
+enum AppointmentStatus {
+  Scheduled
+  Completed
+  Cancelled
+  Blocked
+}
+
+enum PaymentMethod {
+  Dinheiro
+  CartaoCredito
+  CartaoDebito
+  Pix
+  Outro
+}
+
+enum FinancialType {
+  Income
+  Expense
+}
+
+enum CostType {
+  Fixed
+  Variable
+}
+
+model Client {
+  id            String        @id @default(cuid())
+  name          String
+  phone         String
+  email         String?
+  birthday      DateTime?
+  totalSpent    Float         @default(0)
+  lastVisit     DateTime?
+  loyaltyPoints Int           @default(0)
+  isVIP         Boolean       @default(false)
+  status        ClientStatus  @default(Active)
+  preferences   String[]
+  avatar        String?
+  visitCount    Int           @default(0)
+  appointments  Appointment[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Professional {
+  id           String        @id @default(cuid())
+  name         String
+  role         String
+  commission   Float
+  avatar       String?
+  rating       Float         @default(5)
+  active       Boolean       @default(true)
+  appointments Appointment[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Service {
+  id           String         @id @default(cuid())
+  name         String
+  price        Float
+  duration     Int
+  category     ServiceCategory
+  appointments Appointment[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model Appointment {
+  id             String            @id @default(cuid())
+  clientId       String?
+  professionalId String
+  serviceId      String?
+  blockTitle     String?
+  dateTime       DateTime
+  duration       Int
+  status         AppointmentStatus @default(Scheduled)
+  totalPrice     Float
+  notes          String?
+  paymentMethod  PaymentMethod?
+  discount       Float?
+  client         Client?           @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  professional   Professional      @relation(fields: [professionalId], references: [id], onDelete: Restrict)
+  service        Service?          @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  financialRecords FinancialRecord[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+}
+
+model FinancialRecord {
+  id            String         @id @default(cuid())
+  appointmentId String?
+  date          DateTime
+  type          FinancialType
+  category      String
+  costType      CostType?
+  amount        Float
+  description   String
+  appointment   Appointment?   @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}

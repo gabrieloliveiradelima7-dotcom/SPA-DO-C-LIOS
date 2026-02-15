@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Appointment, Client, Professional, Service, PaymentMethod } from '../types';
-import { MOCK_PROFESSIONALS } from '../constants';
 import { 
   Plus, 
   ChevronLeft, 
@@ -26,11 +25,12 @@ interface AppointmentsProps {
   appointments: Appointment[];
   clients: Client[];
   services: Service[];
+  professionals: Professional[];
   onAddAppointment: (app: Appointment) => void;
   onCheckoutAppointment: (app: Appointment) => void;
 }
 
-const Appointments: React.FC<AppointmentsProps> = ({ appointments, clients, services, onAddAppointment, onCheckoutAppointment }) => {
+const Appointments: React.FC<AppointmentsProps> = ({ appointments, clients, services, professionals, onAddAppointment, onCheckoutAppointment }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
@@ -38,7 +38,7 @@ const Appointments: React.FC<AppointmentsProps> = ({ appointments, clients, serv
 
   const [bookingType, setBookingType] = useState<'client' | 'block'>('client');
   const [clientId, setClientId] = useState(clients[0]?.id || '');
-  const [proId, setProId] = useState(MOCK_PROFESSIONALS[0].id);
+  const [proId, setProId] = useState(professionals[0]?.id || '');
   const [serviceId, setServiceId] = useState(services[0]?.id || '');
   const [selectedHour, setSelectedHour] = useState('09:00');
   const [customDuration, setCustomDuration] = useState(60);
@@ -49,6 +49,12 @@ const Appointments: React.FC<AppointmentsProps> = ({ appointments, clients, serv
   const [discount, setDiscount] = useState(0);
 
   const hours = Array.from({ length: 15 }, (_, i) => `${String(i + 8).padStart(2, '0')}:00`);
+
+  useEffect(() => {
+    if (!proId && professionals[0]?.id) {
+      setProId(professionals[0].id);
+    }
+  }, [professionals, proId]);
 
   useEffect(() => {
     if (bookingType === 'client') {
@@ -203,7 +209,7 @@ const Appointments: React.FC<AppointmentsProps> = ({ appointments, clients, serv
                               <div className="flex flex-wrap items-center gap-y-1 gap-x-3 text-[11px] font-medium text-slate-400">
                                 <span className="flex items-center gap-1.5"><Scissors size={12} className="text-rose-400" /> {services.find(s => s.id === app.serviceId)?.name}</span>
                                 <span className="flex items-center gap-1.5"><Clock size={12} /> {app.duration} min</span>
-                                <span className="flex items-center gap-1.5"><User size={12} /> {MOCK_PROFESSIONALS.find(p => p.id === app.professionalId)?.name}</span>
+                                <span className="flex items-center gap-1.5"><User size={12} /> {professionals.find(p => p.id === app.professionalId)?.name}</span>
                               </div>
                             </div>
                             <div className="flex items-center gap-3 self-end sm:self-center">
@@ -292,7 +298,7 @@ const Appointments: React.FC<AppointmentsProps> = ({ appointments, clients, serv
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Profissional</label>
                 <select value={proId} onChange={(e) => setProId(e.target.value)} className="w-full px-4 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-medium outline-none">
-                  {MOCK_PROFESSIONALS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  {professionals.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
               <div className="space-y-1.5">
